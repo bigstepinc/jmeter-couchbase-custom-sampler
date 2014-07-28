@@ -20,6 +20,9 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
+//import java.util.logging.Logger;
  
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -27,8 +30,8 @@ import java.io.IOException;
  
 public class CBSampler extends AbstractJavaSamplerClient implements Serializable {
     private static final long serialVersionUID = 1L;
-    private static final Logger log = LoggingManager.getLoggerForClass();
-    private  static CouchbaseClient client = null;
+    private static final org.apache.log.Logger log = LoggingManager.getLoggerForClass();
+    private CouchbaseClient client = null;
    private  byte[] putContents=null;
  
     // set up default arguments for the JMeter GUI
@@ -47,6 +50,14 @@ public class CBSampler extends AbstractJavaSamplerClient implements Serializable
     @Override 
     public void setupTest(JavaSamplerContext context)
     {
+/*	Properties systemProperties = System.getProperties();
+	System.setProperty("net.spy.log.LoggerImpl", "net.spy.memcached.compat.log.SunLogger");
+        System.setProperties(systemProperties);
+
+        java.util.logging.Logger.getLogger("net.spy.memcached").setLevel(Level.SEVERE);
+        java.util.logging.Logger.getLogger("com.couchbase.client").setLevel(Level.SEVERE);
+        java.util.logging.Logger.getLogger("com.couchbase.client.vbucket").setLevel(Level.SEVERE);
+*/	
 	try
 	{
 		String servers = context.getParameter( "servers" );
@@ -126,6 +137,8 @@ public class CBSampler extends AbstractJavaSamplerClient implements Serializable
             result.setResponseData( stringWriter.toString() );
             result.setDataType( org.apache.jmeter.samplers.SampleResult.TEXT );
             result.setResponseCode( "500" );
+
+	     log.error("runTest:"+e.getMessage()+" "+stringWriter.toString());
         }
  
         return result;
