@@ -2,6 +2,10 @@ package com.bigstep;
 
  
 import com.couchbase.client.CouchbaseClient;
+import com.couchbase.client.CouchbaseConnectionFactoryBuilder;
+import com.couchbase.client.protocol.views.View;
+import com.couchbase.client.protocol.views.ViewResponse;
+import com.couchbase.client.protocol.views.Query;
 
 import java.io.Serializable;
 import java.io.File;
@@ -44,20 +48,32 @@ public class CBSampler extends AbstractJavaSamplerClient implements Serializable
         defaultParameters.addArgument("password", "");
         defaultParameters.addArgument("key", "");
         defaultParameters.addArgument("local_file_path", "");
+        defaultParameters.addArgument("value", "");
+        defaultParameters.addArgument("queue_max_block_time", "5000");
+        defaultParameters.addArgument("timeout", "10000");
+        defaultParameters.addArgument("designdoc", "");
+        defaultParameters.addArgument("viewname", "");
+        defaultParameters.addArgument("limit", "10");
+        defaultParameters.addArgument("debug", "true");
         return defaultParameters;
     }
    	
     @Override 
     public void setupTest(JavaSamplerContext context)
     {
-/*	Properties systemProperties = System.getProperties();
-	System.setProperty("net.spy.log.LoggerImpl", "net.spy.memcached.compat.log.SunLogger");
-        System.setProperties(systemProperties);
+	String debug = context.getParameter( "debug" );
+	if(debug=="false")	
+	{
 
-        java.util.logging.Logger.getLogger("net.spy.memcached").setLevel(Level.SEVERE);
-        java.util.logging.Logger.getLogger("com.couchbase.client").setLevel(Level.SEVERE);
-        java.util.logging.Logger.getLogger("com.couchbase.client.vbucket").setLevel(Level.SEVERE);
-*/	
+		Properties systemProperties = System.getProperties();
+		System.setProperty("net.spy.log.LoggerImpl", "net.spy.memcached.compat.log.SunLogger");
+		System.setProperties(systemProperties);
+
+		java.util.logging.Logger.getLogger("net.spy.memcached").setLevel(Level.SEVERE);
+		java.util.logging.Logger.getLogger("com.couchbase.client").setLevel(Level.SEVERE);
+		java.util.logging.Logger.getLogger("com.couchbase.client.vbucket").setLevel(Level.SEVERE);
+	}
+		
 	try
 	{
 		String servers = context.getParameter( "servers" );
@@ -65,6 +81,8 @@ public class CBSampler extends AbstractJavaSamplerClient implements Serializable
 		String bucket = context.getParameter( "bucket" );
 		String method = context.getParameter( "method" );
 		String file = context.getParameter( "local_file_path" );
+		int max_block_time = Integer.parseInt(context.getParameter( "queue_max_block_time" ));
+		int timeout = Integer.parseInt(context.getParameter( "timeout" ));
 
 		if(method.equals("PUT"))
 			putContents= Files.readAllBytes(Paths.get(file));	
@@ -76,8 +94,12 @@ public class CBSampler extends AbstractJavaSamplerClient implements Serializable
 		String[] arrServers=servers.split(","); 
 		for(String server: arrServers)
 			hosts.add(new URI(server));
-				
-		client =  new CouchbaseClient(hosts, bucket, password);
+		
+		CouchbaseConnectionFactoryBuilder cfb = new CouchbaseConnectionFactoryBuilder();
+	        cfb.setOpQueueMaxBlockTime(max_block_time);
+		cfb.setOpTimeout(timeout);
+	
+		client =  new CouchbaseClient(cfb.buildCouchbaseConnection(hosts, bucket, password,""));
 	}
 	catch(Exception ex)
 	{
@@ -101,7 +123,11 @@ public class CBSampler extends AbstractJavaSamplerClient implements Serializable
     public SampleResult runTest(JavaSamplerContext context) {
 
         String key = context.getParameter( "key" );
+        String value = context.getParameter( "value" );
         String method = context.getParameter( "method" );
+        String designDoc = context.getParameter( "designdoc" );
+        String viewName = context.getParameter( "viewname" );
+        int limit = Integer.parseInt(context.getParameter( "limit" ));
         
 	SampleResult result = new SampleResult();
         result.sampleStart(); // start stopwatch
@@ -117,7 +143,19 @@ public class CBSampler extends AbstractJavaSamplerClient implements Serializable
 	    else 
 		if(method.equals("PUT"))
 		{
-		    client.set(key,putContents);
+			if(value!="")
+				client.set(key,value);
+			else
+		    		client.set(key,putContents);
+		}
+		else
+		if (method.equals("QUERY"))
+		{
+			View view = client.getView(designDoc, viewName);
+			Query query = new Query();
+			query.setIncludeDocs(true); // Include the full document body
+			query.setLimit(limit);
+			ViewResponse response = client.query(view, query);
 		}
 	
     
