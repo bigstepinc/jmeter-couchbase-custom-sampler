@@ -32,7 +32,7 @@ Run jmeter as ususual from the newly created bin file.
 sh ./bin/jmeter.sh 
 ```
 
-Add a new jmeter Java sampler, use the com.bigstep.S3Sampler class.
+Add a new jmeter Java sampler, use the com.bigstep.CBSampler class.
 ![Alt text](/img/jmeter1.png?raw=true "Select jmeter custom sampler")
 
 Configure your couchbase credentials and everything
