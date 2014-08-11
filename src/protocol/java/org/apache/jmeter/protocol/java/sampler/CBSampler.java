@@ -138,6 +138,8 @@ public class CBSampler extends AbstractJavaSamplerClient implements Serializable
 		if(null==client)
 			throw new Exception("CB Client not initialised");
 
+	    long startTime=System.nanoTime();	
+
 	    if(method.equals("GET"))	
 	 	   client.get(key);
 	    else 
@@ -157,11 +159,13 @@ public class CBSampler extends AbstractJavaSamplerClient implements Serializable
 			query.setLimit(limit);
 			ViewResponse response = client.query(view, query);
 		}
-	
+
+	    long endTime=System.nanoTime();
+			
     
             result.sampleEnd(); // stop stopwatch
             result.setSuccessful( true );
-            result.setResponseMessage( "OK on object "+key );
+            result.setResponseMessage( Long.toString(endTime-startTime) );
             result.setResponseCodeOK(); // 200 code
 
         } catch (Exception e) {

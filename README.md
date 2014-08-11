@@ -38,4 +38,4 @@ Add a new jmeter Java sampler, use the com.bigstep.CBSampler class.
 Configure your couchbase credentials and everything
 ![Alt text](/img/jmeter2.png?raw=true "Configure jmeter sampler")
 
-
+The response times of most Couchbase installations are sub-millisecond and thus jmeter by default will only record 0 for sub millisecond samples making any graphing or higher resolution analysis useless. What we did was to implement a nanosecond time counter inside the sampler that is returned as a message on the 5th column of the output csv. We use System.nanoTime() for this. 
