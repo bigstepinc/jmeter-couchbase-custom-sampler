@@ -55,6 +55,8 @@ public class CBSampler extends AbstractJavaSamplerClient implements Serializable
         defaultParameters.addArgument("viewname", "");
         defaultParameters.addArgument("limit", "10");
         defaultParameters.addArgument("debug", "true");
+        defaultParameters.addArgument("include_docs", "true");
+
         return defaultParameters;
     }
    	
@@ -128,7 +130,7 @@ public class CBSampler extends AbstractJavaSamplerClient implements Serializable
         String designDoc = context.getParameter( "designdoc" );
         String viewName = context.getParameter( "viewname" );
         int limit = Integer.parseInt(context.getParameter( "limit" ));
-	String includeDocs= context.getParameter( "includeDocs" );
+	boolean includeDocs = context.getParameter( "include_docs").equals("true");
         
 	SampleResult result = new SampleResult();
         result.sampleStart(); // start stopwatch
@@ -156,7 +158,7 @@ public class CBSampler extends AbstractJavaSamplerClient implements Serializable
 		{
 			View view = client.getView(designDoc, viewName);
 			Query query = new Query();
-			query.setIncludeDocs(true); // Include the full document body
+			query.setIncludeDocs(includeDocs);
 			query.setLimit(limit);
 			ViewResponse response = client.query(view, query);
 		}
