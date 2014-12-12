@@ -128,6 +128,7 @@ public class CBSampler extends AbstractJavaSamplerClient implements Serializable
         String designDoc = context.getParameter( "designdoc" );
         String viewName = context.getParameter( "viewname" );
         int limit = Integer.parseInt(context.getParameter( "limit" ));
+	String includeDocs= context.getParameter( "includeDocs" );
         
 	SampleResult result = new SampleResult();
         result.sampleStart(); // start stopwatch
